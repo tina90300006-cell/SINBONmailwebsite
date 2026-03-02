@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #f1f5f9; font-family: "Microsoft JhengHei", Calibri, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 10px; }
+    .card { background: white; border-radius: 2rem; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.15); width: 100%; max-width: 90rem; height: 92vh; display: flex; overflow: hidden; }
+    .input-field { width: 100%; margin-top: 0.2rem; border: 2px solid #f1f5f9; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 0.9rem; outline: none; transition: all 0.2s; background-color: #f8fafc; }
+    .input-field:focus { border-color: #0078d4; background-color: white; box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1); }
+    .label-title { display: block; font-size: 0.85rem; font-weight: 800; color: #475569; margin-left: 0.25rem; }
+    .subject-preview-box { background-color: #f0f7ff; border: 2px solid #0078d4; color: #0078d4; border-radius: 0.75rem; padding: 0.75rem 1rem; font-weight: 900; font-size: 1.1rem; min-height: 3rem; display: flex; align-items: center; }
+    .pane-padding { padding: 2rem; }
+    .sheet-btn { display: flex; align-items: center; justify-content: center; background-color: #107c10; color: white; padding: 0.8rem; border-radius: 0.75rem; font-weight: 800; transition: all 0.3s; text-decoration: none; border: 2px solid #0e630e; margin-top: 0.5rem; }
+    .footer-brand { text-align: center; color: #94a3b8; font-size: 0.75rem; margin-top: 1rem; font-weight: bold; letter-spacing: 0.1rem; }
+  </style>
+</head>
+<body>
+  <div class="card flex-col lg:flex-row">
+    <div class="w-full lg:w-[25%] bg-slate-50 pane-padding border-r border-gray-100 flex flex-col justify-between">
+      <div class="space-y-4">
+        <div>
+          <label class="label-title text-blue-700 font-bold">寄件者 <span class="text-red-500">*</span></label>
+          <select id="fromUser" required class="input-field font-bold text-gray-700">
+            <option value="">請選擇姓名...</option>
+            <option value="Tom">Tom</option>
+            <option value="Allen">Allen</option>
+            <option value="Max">Max</option>
+            <option value="Tina">Tina</option>
+            <option value="Luca">Luca</option>
+            <option value="Humbert">Humbert</option>
+            <option value="Gary">Gary</option>
+            <option value="William">William</option>
+          </select>
+        </div>
+        <div>
+          <label class="label-title text-blue-700 font-bold">收件者 (To)</label>
+          <textarea id="mainReceiver" class="input-field bg-white h-24 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="label-title text-blue-700 font-bold">副本 (Cc)</label>
+          <textarea id="receiver" class="input-field bg-white h-40 resize-none"></textarea>
+        </div>
+        <div class="pt-4 border-t border-slate-200">
+          <label class="label-title text-green-700 font-bold mb-1">任務管理</label>
+          <a href="https://docs.google.com/spreadsheets/d/1Hf5aFrl2dXMzy4mlk00d4ht8lRchJ6lV1g7Ic3DSXoE/edit?gid=0#gid=0" target="_blank" class="sheet-btn">開啟紀錄試算表</a>
+        </div>
+      </div>
+      
+      <!-- 保留專屬版權標示 -->
+      <div class="footer-brand">
+        TINACHEN ®
+      </div>
+    </div>
+
+    <div class="w-full lg:w-[75%] pane-padding flex flex-col justify-between overflow-y-auto">
+      <div>
+        <h2 class="text-3xl font-black text-gray-800 mb-6">SINBON 任務助手</h2>
+        <form id="appForm" class="space-y-6" autocomplete="off">
+          <div>
+            <label class="label-title font-bold text-gray-700">寄件任務 <span class="text-red-500">*</span></label>
+            <select id="purpose" required class="input-field font-black text-blue-700 text-lg" onchange="handlePurposeChange()">
+              <option value="">請選擇任務...</option>
+              <option value="請報價">💰 請報價</option>
+              <option value="建系統">⚙️ 建系統</option>
+              <option value="標準成本建制">📈 標準成本建制</option>
+              <option value="一元成本建制">💵 一元成本建制</option>
+              <option value="文件回收">📄 文件回收</option>
+            </select>
+          </div>
+
+          <div id="subject-preview-container" class="hidden">
+            <label class="label-title font-bold text-gray-700">自動生成主旨預覽</label>
+            <div id="subjectPreview" class="subject-preview-box">尚未輸入完整資訊...</div>
+          </div>
+
+          <div id="single-area" class="space-y-4 pt-4 border-t border-slate-100">
+            <div id="dynamic-fields" class="grid grid-cols-2 gap-4">
+               <div id="field1-container" class="hidden">
+                 <label class="label-title" id="label-field1"></label>
+                 <!-- 修改為可輸入式的下拉選單 -->
+                 <input list="customerCodes" id="field1" class="input-field" placeholder="選擇或輸入客戶代碼..." oninput="updateSubjectPreview()" onchange="updateSubjectPreview()">
+                 <datalist id="customerCodes">
+                   <option value="LMM - Cable1738-2">
+                   <option value="Lam ResearchB00072">
+                   <option value="TALUS1580">
+                   <option value="TEXON KR1251">
+                 </datalist>
+               </div>
+               <div id="field2-container" class="hidden"><label class="label-title" id="label-field2"></label><input type="text" id="field2" class="input-field" oninput="updateSubjectPreview()"></div>
+               <div id="cost-date-container" class="hidden"><label class="label-title font-bold text-blue-600" id="label-cost-date">日期</label><input type="date" id="costReqDate" class="input-field" onchange="updateSubjectPreview()"></div>
+               <div id="bom-date-container" class="hidden"><label class="label-title font-bold text-blue-600">圖BOM產出預計完成日</label><input type="date" id="bomReqDate" class="input-field"></div>
+               <div id="product-type-container" class="hidden"><label class="label-title font-bold text-purple-700">產品類型 <span class="text-red-500">*</span></label><input type="text" id="productType" class="input-field" oninput="updateSubjectPreview()"></div>
+               <div id="field3-container" class="col-span-2 hidden"><label class="label-title" id="label-field3"></label><input type="text" id="field3" class="input-field"></div>
+            </div>
+            <div id="note-area" class="hidden pt-2">
+              <label class="label-title font-bold text-gray-700">備註 (Note)</label>
+              <textarea id="note" class="input-field" style="height: 60px;"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="mt-4">
+        <button type="submit" form="appForm" class="w-full bg-[#0078d4] text-white font-black py-5 rounded-xl text-2xl shadow-xl hover:bg-blue-800">🚀 同步並啟動 Outlook</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 部署網址僅用於後端通訊，不再顯示於信件中
+    const appLink = "https://script.google.com/macros/s/AKfycbzqgM4OZiIS4efYg_xSchnq0WNDZvLikJZ9gj2OrAX8AXlICsos0BKhhq-uJvYWutJ5YQ/exec";
+    const commonCc = "AndyLai@sinbon.com;KevinLo@sinbon.com;JasonShih@sinbon.com;AllenHuang@sinbon.com;JuneYang@sinbon.com;MaxYen@sinbon.com;GaryLan@sinbon.com;HumbertHsu@sinbon.com;TomHsiao@sinbon.com;LucaChen@sinbon.com;TinaChen01@sinbon.com";
+
+    const config = {
+      "請報價": { to: "LucyChung@sinbon.com;CherryKo@sinbon.com;BellaChiu@sinbon.com", cc: commonCc, tag: "<請報價>", fields: ["客戶代碼", "客戶料號", "資料路徑"] },
+      "建系統": { to: "LucyChung@sinbon.com;CherryKo@sinbon.com;BellaChiu@sinbon.com;ErinHo@sinbon.com", cc: commonCc, tag: "<建系統>", fields: ["客戶代碼", "信邦料號", "資料路徑"] },
+      "標準成本建制": { to: "LucyChung@sinbon.com;CherryKo@sinbon.com;BellaChiu@sinbon.com;ErinHo@sinbon.com;KyraHuang@sinbon.com", cc: commonCc, tag: "<確認料況、建立標準成本、圖BOM產出>", fields: ["客戶代碼", "信邦料號", "資料路徑"] },
+      "一元成本建制": { to: "LucyChung@sinbon.com;CherryKo@sinbon.com;BellaChiu@sinbon.com;ErinHo@sinbon.com;KyraHuang@sinbon.com", cc: commonCc, tag: "<確認料況、建立一元成本、圖BOM產出>", fields: ["客戶代碼", "信邦料號", "資料路徑"] },
+      "文件回收": { to: "RayChung@sinbon.com;ErinHo@sinbon.com", cc: commonCc, tag: "<文件回收>", fields: ["", "信邦料號"] }
+    };
+
+    function handlePurposeChange() {
+      const p = document.getElementById('purpose').value;
+      resetFields();
+      if (p) {
+        updatePurposeUI(p);
+      }
+    }
+
+    function resetFields() {
+      const ids = ['field1', 'field2', 'field3', 'costReqDate', 'bomReqDate', 'note', 'productType'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.value = ""; el.required = false; }
+      });
+      document.getElementById('subjectPreview').innerText = "尚未輸入完整資訊...";
+      document.getElementById('subject-preview-container').classList.add('hidden');
+      document.getElementById('note-area').classList.add('hidden');
+      ['cost-date-container', 'bom-date-container', 'field1-container', 'field2-container', 'field3-container', 'product-type-container'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+    }
+
+    function updatePurposeUI(p) {
+      const c = config[p];
+      document.getElementById('mainReceiver').value = c.to;
+      document.getElementById('receiver').value = c.cc;
+      document.getElementById('subject-preview-container').classList.remove('hidden');
+      document.getElementById('note-area').classList.remove('hidden');
+      const isCost = p.includes("成本");
+      const isDemand = (p === "請報價" || p === "建系統");
+      const isFile = (p === "文件回收");
+      document.getElementById('cost-date-container').classList.remove('hidden');
+      document.getElementById('costReqDate').required = true;
+      document.getElementById('label-cost-date').innerText = (isDemand || isFile) ? "需求日期" : p + "預計完成日";
+      if (isCost) { document.getElementById('bom-date-container').classList.remove('hidden'); document.getElementById('bomReqDate').required = true; }
+      if (isCost || isFile) { document.getElementById('product-type-container').classList.remove('hidden'); document.getElementById('productType').required = true; }
+      c.fields.forEach((name, index) => {
+        const i = index + 1;
+        const el = document.getElementById('field' + i);
+        const container = document.getElementById('field' + i + '-container');
+        if (name) { 
+          document.getElementById('label-field' + i).innerText = name + " *"; 
+          el.required = true; 
+          container.classList.remove('hidden'); 
+        }
+      });
+      updateSubjectPreview();
+    }
+
+    function updateSubjectPreview() {
+      const p = document.getElementById('purpose').value;
+      if (!p || !config[p]) return;
+      const f1 = document.getElementById('field1').value;
+      const f2 = document.getElementById('field2').value;
+      const date = document.getElementById('costReqDate').value;
+      const tag = config[p].tag;
+      const type = document.getElementById('productType').value;
+      let mainText = "";
+      if (p === "請報價" || p === "建系統") { mainText = `${f1}, ${f2}, ${date}`; } 
+      else if (p.includes("成本") || p === "文件回收") { mainText = `${f2}, ${date}, ${type}`; }
+      document.getElementById('subjectPreview').innerText = tag + mainText;
+    }
+
+    function formatDate(s) { if (!s) return ""; const d = new Date(s); return isNaN(d.getTime()) ? s : `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+
+    document.getElementById('appForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const p = document.getElementById('purpose').value;
+      const formData = {
+        fromUser: document.getElementById('fromUser').value,
+        purpose: p,
+        field1: document.getElementById('field1').value,
+        field2: document.getElementById('field2').value,
+        field3: document.getElementById('field3').value,
+        costReqDate: formatDate(document.getElementById('costReqDate').value),
+        bomReqDate: formatDate(document.getElementById('bomReqDate').value),
+        note: document.getElementById('note').value.trim(),
+        productType: document.getElementById('productType').value
+      };
+      
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.processForm(formData);
+      }
+      
+      const to = document.getElementById('mainReceiver').value.trim();
+      const cc = document.getElementById('receiver').value.trim();
+      const subject = document.getElementById('subjectPreview').innerText;
+      const noteLine = formData.note ? `\r\n備註：${formData.note}\r\n` : "";
+      // 僅顯示文字，不包含實際網址連結
+      const assistantLine = `\r\n任務助手頁面：\r\n`;
+      
+      let body = "";
+      if (p === "請報價") {
+        body = `Hi Lucy\r\n\r\n請協助報價\r\n\r\n客戶代碼: ${formData.field1}\r\n客戶料號: ${formData.field2}\r\n\r\n資料路徑:\r\n<${formData.field3}>\r\n\r\n需求時間: ${formData.costReqDate}\r\n${noteLine}${assistantLine}\r\n感謝`;
+      } else if (p === "建系統") {
+        body = `Hi Lucy\r\n\r\n請協助建系統\r\n信邦料號：${formData.field2}\r\n\r\n客戶代碼：${formData.field1}\r\n\r\n資料路徑：\r\n<${formData.field3}>\r\n\r\n需求日期：${formData.costReqDate}\r\n${noteLine}${assistantLine}\r\n感謝`;
+      } else if (p === "文件回收") {
+        body = `Hi Erin, Ray\r\n\r\n信邦料號: ${formData.field2}\r\n產品類型: ${formData.productType}\r\n需求時間: ${formData.costReqDate}\r\n${noteLine}FAIR已發出, 請協助回收紙本圖BOM。\r\n${assistantLine}\r\n感謝`;
+      } else if (p.includes("成本")) {
+        body = `Hi All\r\n\r\n客戶代碼：${formData.field1}\r\n信邦料號：${formData.field2}\r\n產品類型：${formData.productType}\r\n\r\n資料路徑：\r\n<${formData.field3}>\r\n\r\nHi Lucy\r\n請協助建立${p}，\r\n預計完成日：${formData.costReqDate}\r\n\r\nHi Erin\r\n請協助圖BOM產出\r\n預計完成日：${formData.bomReqDate}\r\n${noteLine}${assistantLine}\r\n感謝`;
+      }
+      let mailtoParams = [];
+      if (cc) mailtoParams.push("cc=" + encodeURIComponent(cc));
+      mailtoParams.push("subject=" + encodeURIComponent(subject));
+      mailtoParams.push("body=" + encodeURIComponent(body));
+      window.location.href = "mailto:" + to + "?" + mailtoParams.join("&");
+    });
+  </script>
+</body>
+</html>
